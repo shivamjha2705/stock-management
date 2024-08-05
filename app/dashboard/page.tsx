@@ -31,7 +31,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import { AreaChartComp } from '@/components/areaChartComp';
 import { DonutComp } from '@/components/donutComp';
-import { OrderRecentClient } from '@/components/tables/recent-order-tables/client';
 import { Sale, salesData, vegData } from '@/constants/salesData';
 
 
@@ -244,10 +243,7 @@ export default function page() {
         </div>
 
 
-<div className="px-5">
-<OrderRecentClient  />
 
-</div>
 
 
 <div className="flex my-6 justify-between mx-3 lg:flex-nowrap flex-wrap ">
