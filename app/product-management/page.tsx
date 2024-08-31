@@ -2,7 +2,6 @@
 import BreadCrumb from '@/components/breadcrumb';
 import MainLayout from '@/components/layout/main-layout';
 import { ProductManagementClient } from '@/components/tables/product-management-tables/client';
-import { SubscriptionManagementClient } from '@/components/tables/subscription-management-tables/client';
 
 const breadcrumbItems = [{ title: 'Item Management', link: '/dashboard/product-management' }];
 
