@@ -1,6 +1,11 @@
-import Axios from 'axios';
+import Axios, { Method, AxiosResponse } from 'axios';
 
 import storage from '../utils/storage';
+
+// Define the axios instance with interceptors
+const axios = Axios.create({
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1`,
+});
 
 function authRequestInterceptor(config: any) {
   config.headers = config.headers ?? {};
@@ -11,12 +16,11 @@ function authRequestInterceptor(config: any) {
   config.headers.Accept = 'application/json';
   return config;
 }
-export const axios = Axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
-});
+
 axios.interceptors.request.use(authRequestInterceptor);
+
 axios.interceptors.response.use(
-  (response: any) => {
+  (response: AxiosResponse<any>) => {
     return response.data?.result ? response.data?.result : response.data;
   },
   (error: any) => {
@@ -34,11 +38,30 @@ axios.interceptors.response.use(
           ?.map((e: any) => e.message || e.msg)
           ?.join(',');
     }
-    // Handle Error
-    // eslint-disable-next-line no-undef
     return Promise.reject({
       statusCode: error.response?.status,
       message: message
     });
   }
 );
+
+// Define a generic API call function
+async function apiCall<T = any>(
+  method: Method,
+  url: string,
+  data?: any
+): Promise<T> {
+  try {
+    const response: AxiosResponse<T> = await axios({
+      method,
+      url,
+      data
+    });
+    return response.data;
+  } catch (error: any) {
+    // You can handle specific errors or rethrow them
+    throw error;
+  }
+}
+
+export default apiCall;
