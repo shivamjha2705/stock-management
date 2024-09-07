@@ -1,31 +1,48 @@
 'use client';
-import { useAuthContext } from '@/provider/auth.provider';
-import { IAuthContext } from '@/types';
+import { ReactNode } from 'react';
+import { RootState } from '@/app/redux/store';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getLocalStorageItem, getSessionStorageItem } from '@/utils/localStorage';
+import { setLoading } from '@/app/redux/slices/authSlice';
+import Loader from '../loader/Loader';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuth, loading } = useAuthContext() as IAuthContext;
+interface ProtectedRouteProps {
+  children: ReactNode; // Define children as a ReactNode prop
+}
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  // const { loading } = useSelector((state: RootState) => state.auth);
+  const isAuthenticated  = getSessionStorageItem('token');
+  const { loading } = useSelector((state: RootState) => state.auth);
+
   const { push } = useRouter();
-// not removed from if(isAuth) for access
-  useEffect(() => {
-    console.log('isAuth', isAuth);
-    if (isAuth) {
-      push('/auth/login');
-    }
-  }, [loading, isAuth]);
+  const dispatch=useDispatch()
 
-// not added
-  if (!loading) {
-    return <div>Loading...</div>;
+  useEffect(() => {
+    dispatch(setLoading(true)); 
+    const isAuthenticated  = getSessionStorageItem('token');
+    if (!isAuthenticated) {
+      push('/auth/login');
+    }else{
+      dispatch(setLoading(false)); 
+    }
+  }, [isAuthenticated, push]);
+
+  if (loading) {
+    return  <div className='  min-h-[100vh] min-w-full flex justify-center items-center' >
+    <Loader/>
+    </div>
   }
 
-  // commented
-  // if (!isAuth) {
-  //   return null;
+  // if (!isAuthenticated) {
+  //   return null; // Render nothing if not authenticated to avoid flicker
   // }
 
-  return children;
+
+  // Render children if authenticated
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
