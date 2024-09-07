@@ -46,13 +46,13 @@ export default function UserAuthForm() {
   const onSubmit = async (data: UserFormValue) => {
     dispatch(setLoading(true)); 
     try {
-      const response: any = await axios.post('http://localhost:3001/admin/employee/login', {
-        Email: data.Email,
-        Password: data.Password,
+      const response: any = await axios.post('http://localhost:3001/api/admins/login', {
+        email_id: data.Email,
+        login_password: data.Password,
       });
 
       if (response.data.statusCode === 200) {
-        const token = response.data.data;
+        const token = response.data.token;
         setSessionStorageItem('token', token);
         dispatch(loginSuccess(token)); // Dispatch Redux action
         router.push('/dashboard'); // Redirect after successful login
