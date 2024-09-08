@@ -130,6 +130,12 @@ export const navItems: NavItem[] = [
     icon: 'product',
     label: 'create-product'
   },
+  {
+    title: 'Stock Management',
+    href: '/stock-management',
+    icon: 'product',
+    label: 'create-stock'
+  },
   // {
   //   title: 'Settings',
   //   href: '/settings-management',

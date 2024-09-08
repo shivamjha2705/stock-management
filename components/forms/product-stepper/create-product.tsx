@@ -1,6 +1,7 @@
 'use client';
 
-
+// import axios from '@/lib/axios';
+import apiCall from '@/lib/axios';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -8,7 +9,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from '@/components/ui/form';
 import { Heading } from '@/components/ui/heading';
 import { Input } from '@/components/ui/input';
@@ -17,12 +18,12 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ReactSelect from 'react-select';
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from '@/components/ui/textarea';
 
 // Icons
 import { Trash, Edit } from 'lucide-react';
@@ -30,12 +31,10 @@ import { Trash, Edit } from 'lucide-react';
 // Validation And Forms
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form';
-
+import { useForm, Controller } from 'react-hook-form';
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-
 
 // Create a
 interface ProductFormType {
@@ -44,23 +43,13 @@ interface ProductFormType {
 
 const productFormSchema = z.object({
   productName: z.string().min(1, 'Product Name is required'),
-  description: z.string().min(1, 'Description is required'),
-  productImage: z.object({}).optional(),
-  available: z.string().min(1, 'Please Enter availability'),
-  type: z.string().min(1, 'Type is required'),
-  unitQuantity: z.number().positive('Unit Quantity must be greater than zero'),
+  category: z.string().min(1, 'Category is required'),
+  description: z.string().min(1, 'Product Description is required'),
+  sku: z.string().min(1, 'SKU is required'),
+  costPerUnit: z.number().positive('Cost per unit must be greater than zero'),
 });
 
-
 export type ProductFormValues = z.infer<typeof productFormSchema>;
-
-
-
-
-
-
-
-
 
 export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) => {
   const params = useParams();
@@ -70,34 +59,27 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
   const [loading, setLoading] = useState(false);
   const [typeModalOpen, setTypeModalOpen] = useState(false);
 
-  const [types, setTypes] = useState([
+  const [categories, setCategories] = useState([
     { value: 'Staples', label: 'Staples' },
     { value: 'Regular Veggie', label: 'Regular Veggie' },
-    { value: 'Exotics Veggies', label: 'Exotics Veggies' },
+    { value: 'Exotic Veggies', label: 'Exotic Veggies' },
     { value: 'Salads', label: 'Salads' },
     { value: 'Exotic Salads', label: 'Exotic Salads' },
     { value: 'Add Ons', label: 'Add Ons' },
   ]);
-  const [newType, setNewType] = useState('');
+  const [newCategory, setNewCategory] = useState('');
 
-
-
-// Setting  
   const title = initialData ? 'Edit Item' : 'Create New Item';
   const description = initialData
-    ? 'Edit Item details.'
-    : 'To create a new Items, fill in the required information.';
+    ? 'Edit item details.'
+    : 'To create a new item, fill in the required information.';
   const toastMessage = initialData ? 'Item updated.' : 'Item created.';
   const action = initialData ? 'Save changes' : 'Create';
-
-
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     mode: 'onChange',
   });
-
-  
 
   const {
     control,
@@ -106,20 +88,29 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
     setValue,
   } = form;
 
-
-
   const onSubmit = async (data: ProductFormValues) => {
     try {
       setLoading(true);
+      const formattedData = {
+        product_name: data.productName,
+        category: data.category,
+        product_description: data.description,
+        sku: data.sku,
+        cost_price_per_unit: data.costPerUnit,
+      };
+
       if (initialData) {
-        // await axios.post(`/api/products/edit-product/${initialData._id}`, data);
+        // If you're editing an existing product
+        await apiCall('put', `/products/${initialData._id}`, formattedData);
       } else {
-        // const res = await axios.post(`/api/products/create-product`, data);
-        // console.log("product", res);
+        // If you're creating a new product
+        await apiCall('post', '/products', formattedData);
       }
       router.refresh();
-      router.push(`/dashboard/products`);
+      // router.push('/dashboard/products');
     } catch (error: any) {
+      console.error('Failed to submit the form:', error);
+      // Handle the error (e.g., show a toast or message)
     } finally {
       setLoading(false);
     }
@@ -128,52 +119,56 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
   const onDelete = async () => {
     try {
       setLoading(true);
-      //   await axios.delete(`/api/${params.storeId}/products/${params.productId}`);
+      await apiCall('delete', `/products/${params.productId}`);
       router.refresh();
       router.push(`/${params.storeId}/products`);
     } catch (error: any) {
+      console.error('Failed to delete the product:', error);
+      // Handle the error (e.g., show a toast or message)
     } finally {
       setLoading(false);
       setOpen(false);
     }
   };
 
-
-
-  const addType = () => {
-    if (newType.trim()) {
-      setTypes([...types, { value: newType, label: newType }]);
-      setNewType('');
+  const addCategory = () => {
+    if (newCategory.trim()) {
+      setCategories([...categories, { value: newCategory, label: newCategory }]);
+      setNewCategory('');
     }
   };
-  const deleteType = (typeToDelete: string) => {
-    setTypes(types.filter(type => type.value !== typeToDelete));
+
+  const deleteCategory = (categoryToDelete: string) => {
+    setCategories(categories.filter(category => category.value !== categoryToDelete));
   };
-
-
 
   return (
     <>
       <Dialog open={typeModalOpen} onOpenChange={setTypeModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Manage Types</DialogTitle>
-            <DialogDescription>Add or remove product types.</DialogDescription>
+            <DialogTitle>Manage Categories</DialogTitle>
+            <DialogDescription>Add or remove product categories.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex justify-between">
-            <Input
-              placeholder="New Type"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value)}
-            />
-            <Button className='ms-3' onClick={addType}>Add</Button>
+              <Input
+                placeholder="New Category"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+              />
+              <Button className="ms-3" onClick={addCategory}>
+                Add
+              </Button>
             </div>
             <div className="space-y-2">
-              {types.map((type) => (
-                <div key={type.value} className="flex justify-between items-center">
-                  <span>{type.label}</span>
-                  <Button variant="destructive" onClick={() => deleteType(type.value)}>
+              {categories.map((category) => (
+                <div key={category.value} className="flex justify-between items-center">
+                  <span>{category.label}</span>
+                  <Button
+                    variant="destructive"
+                    onClick={() => deleteCategory(category.value)}
+                  >
                     Delete
                   </Button>
                 </div>
@@ -185,12 +180,6 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-    
-
-  
-
-   
 
       <div className="flex items-center justify-between">
         <Heading title={title} description={description} />
@@ -207,23 +196,18 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
       </div>
       <Separator />
       <Form {...form}>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-full space-y-8"
-        >
-
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-8">
           <div className="relative mb-4 gap-8 rounded-md border p-4 md:grid md:grid-cols-3">
-
             <FormField
               control={form.control}
               name="productName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Item Name</FormLabel>
+                  <FormLabel>Product Name</FormLabel>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder="Enter Item Name"
+                      placeholder="Enter Product Name"
                       {...field}
                     />
                   </FormControl>
@@ -231,47 +215,30 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
                 </FormItem>
               )}
             />
-              <FormField
+
+            <FormField
               control={form.control}
-              name="type"
+              name="category"
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center">
-                    <FormLabel>Type</FormLabel>
-                    <Edit className="text-red-500 ms-1" height={15} width={15} onClick={() => setTypeModalOpen(true)}/>
+                    <FormLabel>Category</FormLabel>
+                    <Edit
+                      className="text-red-500 ms-1"
+                      height={15}
+                      width={15}
+                      onClick={() => setTypeModalOpen(true)}
+                    />
                   </div>
                   <FormControl>
                     <ReactSelect
-                      // isSearchable
-                      options={types}
+                      options={categories}
                       getOptionLabel={(option) => option.label}
                       getOptionValue={(option) => option.value}
                       isDisabled={loading}
-                      onChange={(selected) => field.onChange(selected ? selected.value : '')}
-                      // value={types.find(option => option.value === field.value)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-
-
-
-<FormField
-              control={form.control}
-              name="unitQuantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Unit Quantity (gms)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      disabled={loading}
-                      placeholder="Enter Unit Quantity"
-                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                      value={field.value || ''}
+                      onChange={(selected) =>
+                        field.onChange(selected ? selected.value : '')
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -280,55 +247,54 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
             />
 
             <FormField
-              control={control}
-              name="available"
+              control={form.control}
+              name="sku"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Item Availability</FormLabel>
+                  <FormLabel>SKU</FormLabel>
                   <FormControl>
-                    <Select disabled={loading} onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Available">Available</SelectItem>
-                        <SelectItem value="Unavailable">Unavailable</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      disabled={loading}
+                      placeholder="Enter SKU"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormMessage>{errors.available?.message}</FormMessage>
+                  <FormMessage />
                 </FormItem>
               )}
             />
-           
-            <Controller
-              name="productImage"
-              control={control}
+
+            <FormField
+              control={form.control}
+              name="costPerUnit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Item Image</FormLabel>
+                  <FormLabel>Cost per Unit</FormLabel>
                   <FormControl>
                     <Input
-                      type="file"
-                      disabled={form.formState.isSubmitting}
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          field.onChange(e.target.files[0]);
-                        }
-                      }}
+                      type="number"
+                      disabled={loading}
+                      placeholder="Enter Cost per Unit"
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value === '' ? undefined : Number(e.target.value)
+                        )
+                      }
+                      value={field.value || ''}
                     />
                   </FormControl>
-                  {errors.productImage && <FormMessage>{errors.productImage.message}</FormMessage>}
+                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
+
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Item Description</FormLabel>
+                <FormLabel>Product Description</FormLabel>
                 <FormControl>
                   <Textarea
                     disabled={loading}
@@ -341,6 +307,7 @@ export const CreateProductForm: React.FC<ProductFormType> = ({ initialData }) =>
               </FormItem>
             )}
           />
+
           <Button type="submit" disabled={loading}>
             {action}
           </Button>
