@@ -138,7 +138,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'Customer Management',
-    href: '/customer',
+    href: '/customer/management',
     icon: 'user',
     label: 'Customer Management'
   },
