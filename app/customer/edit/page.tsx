@@ -3,6 +3,7 @@
 import BreadCrumb from '@/components/breadcrumb';
 import { CreateProfileOne } from '@/components/forms/user-profile-stepper/create-profile';
 import MainLayout from '@/components/layout/main-layout';
+import ProtectedRoute from '@/components/layout/protected-route';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import apiCall from '@/lib/axios';
 import { useParams } from 'next/navigation';
@@ -26,6 +27,7 @@ const [data, setData] = useState(null)
   }, [id])
 
   return (
+    <ProtectedRoute>
     <MainLayout meta={{ title: '' }}>
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4 min-h-screen p-4 pt-6 md:p-8">
@@ -34,5 +36,6 @@ const [data, setData] = useState(null)
       </div>
     </ScrollArea>
     </MainLayout>
+    </ProtectedRoute>
   );
 }
