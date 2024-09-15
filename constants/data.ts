@@ -136,6 +136,12 @@ export const navItems: NavItem[] = [
     icon: 'product',
     label: 'create-stock'
   },
+  {
+    title: 'Customer Management',
+    href: '/customer',
+    icon: 'user',
+    label: 'Customer Management'
+  },
   // {
   //   title: 'Settings',
   //   href: '/settings-management',

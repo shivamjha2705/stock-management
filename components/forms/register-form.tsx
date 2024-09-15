@@ -43,7 +43,7 @@ export default function UserAuthForm() {
   const onSubmit = async (data: UserFormValue) => {  // Ensure 'data' is correctly typed
     dispatch(setLoading(true));
     try {
-      const response: any = await axios.post('http://localhost:3001/api/admins/signup', {
+      const response: any = await axios.post('http://localhost:4000/api/admins/signup', {
         first_name: data.first_name,
         last_name: data.last_name,
         username: data.username,

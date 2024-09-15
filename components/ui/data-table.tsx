@@ -77,7 +77,7 @@ export function DataTable<TData, TValue>({
   className="mb-4 max-w-64"
 />
 
-        <DropdownMenu>
+       {filters && <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button style={{ background: "", color: 'white' }} className="text-xs md:text-sm ms-4">
               Filter <ChevronDown className="ml-2 h-4 w-4" />
@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
               </DropdownMenuSub>
             ))}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu>}
       </div>
 
       <ScrollArea className="rounded-md border min-h-[70vh]">
